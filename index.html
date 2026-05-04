@@ -4159,28 +4159,29 @@ document.addEventListener('DOMContentLoaded', function() {
 })();
 
 
-// ── DAL Book — siempre carga DAL Miami directamente ──
+// ── DAL Book — Arranque ──
+// El auto-restore ya corrió arriba y escribió todo al localStorage.
+// Ahora limpiamos flags viejos, inicializamos y cargamos.
+
 initEmpresas();
 
-// Asegurar que DAL Miami existe y está activa
-(function() {
-  const todas = getTodasEmpresas();
-  // Limpiar duplicado dalmiami si existe
-  if (todas['dalmiami']) { delete todas['dalmiami']; saveTodasEmpresas(todas); }
-  // Forzar DAL como activa
-  localStorage.setItem('dal_empresa_actual', 'dal');
-})();
+// Limpiar flags de seeds viejos para que gastos se recargue
+localStorage.removeItem('sifa_seed_dalmiami_v1');
+localStorage.removeItem('sifa_seed_dalmiami_v2');
+
+// Forzar DAL como activa y cargar
+localStorage.setItem('dal_empresa_actual', 'dal');
 
 const _dalEmp = getEmpresa('dal');
 if (_dalEmp) {
   cargarDatosEmpresa(_dalEmp);
   applyEmpresaTheme(_dalEmp);
-  actualizarBtnClaude();
+  // Correr seed de gastos (Enero-Febrero-Marzo Chase)
+  if (typeof seedGastosDalMiami === 'function') seedGastosDalMiami();
+  if (typeof actualizarBtnClaude === 'function') actualizarBtnClaude();
 }
 updateBadges();
 showSection('dashboard');
-
-// Recordatorio de backup
 setTimeout(checkRecordatorioBackup, 3000);
 
 
