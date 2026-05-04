@@ -4129,13 +4129,18 @@ setInterval(updateDate, 60000);
 initEmpresas();
 ['sifa_seed_dalmiami_v1','sifa_seed_dalmiami_v2'].forEach(k=>localStorage.removeItem(k));
 localStorage.setItem('dal_empresa_actual','dal');
-const _dalEmp = getEmpresa('dal');
-if (_dalEmp) {
-  cargarDatosEmpresa(_dalEmp);
-  applyEmpresaTheme(_dalEmp);
-  if (typeof seedGastosDalMiami === 'function') seedGastosDalMiami();
-  if (typeof actualizarBtnClaude === 'function') actualizarBtnClaude();
-}
+
+// Cargar DAL Miami directamente — sin depender de getEmpresa
+const _dalData = {"key":"dal","nombre":"DAL MIAMI EXPORT LLC","sub":"Export LLC — Libro de Asiento","ein":"EIN: 93-1412443","dbPrefix":"dalmiami_","direccion":"3901 SW 78th CT Miami FL-33155","email":"dalmiami9@gmail.com","tel":"+1 786-839-1403","colorPrimary":"#e02020","colorSecondary":"#2060c0","colorAccent":"#202020","banco":"JPMORGAN CHASE BANK, N.A","swift":"267084131","cuenta":"960559521 USD","gerente":"Diego Hernández","cargoGerente":"Gerente Financiero","presidente":"Alejandro De Lara","firmaSVG":null,"cunoSVG":null,"logo":null};
+
+// Asegurar empresa en sys_empresas_v2
+const _todasEmp = getTodasEmpresas();
+if (!_todasEmp['dal']) { _todasEmp['dal'] = _dalData; saveTodasEmpresas(_todasEmp); }
+
+cargarDatosEmpresa(_dalData);
+applyEmpresaTheme(_dalData);
+if (typeof seedGastosDalMiami === 'function') seedGastosDalMiami();
+if (typeof actualizarBtnClaude === 'function') actualizarBtnClaude();
 updateBadges();
 showSection('dashboard');
 setTimeout(checkRecordatorioBackup, 3000);
