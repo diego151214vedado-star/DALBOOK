@@ -4114,69 +4114,25 @@ function mostrarRecordatorioBackup(mensaje) {
 updateDate();
 setInterval(updateDate, 60000);
 
-// ═══ AUTO-RESTORE v2 — DAL Miami Export LLC ═══
+// ═══ DAL Book — Carga inicial ═══
 (function() {
   try {
-    const yaRestaurado = localStorage.getItem('sifa_auto_restored_v2');
-    if (yaRestaurado) return;
-    // Limpiar datos viejos de otras empresas antes de cargar DAL Book
-    ['az_','cate_','hcdaisla_'].forEach(p => {
-      ['clientes','mercancias','facturas','pagos','invoices','calculos','anticipos','gastos'].forEach(t => {
-        localStorage.removeItem(p + t);
-      });
+    if (localStorage.getItem('sifa_auto_restored_v2')) return;
+    const data = {"sys_empresas_v2": {"dal": {"key": "dal", "nombre": "DAL MIAMI EXPORT LLC", "sub": "Export LLC — Libro de Asiento", "ein": "EIN: 93-1412443", "dbPrefix": "dalmiami_", "direccion": "3901 SW 78th CT Miami FL-33155", "email": "dalmiami9@gmail.com", "tel": "+1 786-839-1403", "colorPrimary": "#e02020", "colorSecondary": "#2060c0", "colorAccent": "#202020", "banco": "JPMORGAN CHASE BANK, N.A", "swift": "267084131", "cuenta": "960559521 USD", "gerente": "Diego Hernández", "cargoGerente": "Gerente Financiero", "presidente": "Alejandro De Lara", "firmaSVG": null, "cunoSVG": null, "logo": null}}, "dalmiami_clientes": [{"id": "mo9sye788uw1azyvi3u", "nombre": "La Catedral SURL", "cif": "50004348171", "pais": "Cuba", "direccion": "Calle 8 entre Calazada y 5ta, Plaza, La Habana", "telefono": "+5352832090", "email": "catedralrestaurantecuba@gmail.com", "notas": "", "creado": "2026-04-22T07:19:33.814Z"}, {"id": "mo9sye78q8octpmjl99", "nombre": "CEDA SURL", "cif": "50004244884", "pais": "Cuba", "direccion": "Santo Tomas y Subirana, Centro Habana", "telefono": "+53 5 2581003", "email": "cedasubirana@gmail.com", "notas": "", "creado": "2026-04-22T07:21:35.973Z"}, {"id": "mo9sye780o9eau46z3zj", "nombre": "Santa Barbara SURL", "cif": "", "pais": "Cuba", "direccion": "Calle M entre linea y 17, Plaza, La Habana", "telefono": "+53 5 2645177", "email": "", "notas": "", "creado": "2026-04-22T07:25:57.846Z"}, {"id": "mo9sye78m9jg6xyhc38", "nombre": "MERCY SURL", "pais": "Cuba"}], "dalmiami_mercancias": [{"id": "mo9satc69urowiwdae5", "nombre": "Frozen 4x10 Lb Poly- Bagged", "codigo": "", "unidad": "KG", "precio": 0, "categoria": "Pollo", "descripcion": ""}, {"id": "mo9sye78pb74h8bsdu", "nombre": "Frozen 4x10 Lb PolyBagged", "unidad": "Caja", "categoria": "Alimentos", "descripcion": "Pollo congelado 4x10 Lb en bolsa"}, {"id": "mo9sye7806ql2i6vv6fy", "nombre": "Frozen Pork Boneless Loin", "unidad": "KG", "categoria": "Alimentos", "descripcion": "Lomo de cerdo deshuesado congelado"}, {"id": "mo9sye78jbdr29ol7o", "nombre": "Sanderson Farms Frozen Half Bird", "unidad": "Caja", "categoria": "Alimentos", "descripcion": "Pollo entero Sanderson Farms congelado, medio"}, {"id": "moa14lrxze7mllcptu", "nombre": "Frozen 4x10 Lb Poly-Bagged", "unidad": "Caja", "categoria": "Pollo", "descripcion": "Pollo congelado 4x10 Lb en bolsa"}], "dalmiami_facturas": [{"id": "mo9sye78dlrqb2utm2e", "fecha": "2026-01-12", "numero": "2601", "clienteId": "mo9sye788uw1azyvi3u", "mercanciaId": "moa14lrxze7mllcptu", "deuda": 18627.9, "arrastre": 0, "estatus": "Pagado"}, {"id": "mo9sye78u0ataqo6keh", "fecha": "2026-01-12", "numero": "2602", "clienteId": "mo9sye78q8octpmjl99", "mercanciaId": "moa14lrxze7mllcptu", "deuda": 18627.9, "arrastre": 0, "estatus": "Pagado"}, {"id": "mo9sye78g7zukokv2hi", "fecha": "2026-01-12", "numero": "2603", "clienteId": "mo9sye78m9jg6xyhc38", "mercanciaId": "moa14lrxze7mllcptu", "deuda": 18627.9, "arrastre": 0, "estatus": "Pagado"}, {"id": "mo9sye78ip94gsj1qgc", "fecha": "2026-01-12", "numero": "2604", "clienteId": "mo9sye780o9eau46z3zj", "mercanciaId": "moa14lrxze7mllcptu", "deuda": 18627.9, "arrastre": 0, "estatus": "Pagado"}, {"id": "mo9sye788dfjrvow64", "fecha": "2026-02-15", "numero": "2605", "clienteId": "mo9sye788uw1azyvi3u", "mercanciaId": "mo9sye7806ql2i6vv6fy", "deuda": 33176, "arrastre": 0, "estatus": "Pagado parcialmente"}, {"id": "mo9sye78fg71fb6op6t", "fecha": "2026-02-15", "numero": "2606", "clienteId": "mo9sye78q8octpmjl99", "mercanciaId": "mo9sye7806ql2i6vv6fy", "deuda": 33168, "arrastre": 0, "estatus": "Pagado parcialmente"}, {"id": "mo9sye78gsoz1fsq2qm", "fecha": "2026-02-15", "numero": "2607", "clienteId": "mo9sye78m9jg6xyhc38", "mercanciaId": "mo9sye7806ql2i6vv6fy", "deuda": 33172, "arrastre": 0, "estatus": "Pagado parcialmente"}, {"id": "mo9sye7805el11envunk", "fecha": "2026-04-08", "numero": "2608", "clienteId": "mo9sye788uw1azyvi3u", "mercanciaId": "mo9sye78jbdr29ol7o", "deuda": 12372.75, "arrastre": 0, "estatus": "Pendiente"}, {"id": "mo9sye78uch4xlkbqg", "fecha": "2026-04-08", "numero": "2609", "clienteId": "mo9sye78q8octpmjl99", "mercanciaId": "mo9sye78jbdr29ol7o", "deuda": 12372.75, "arrastre": 0, "estatus": "Pendiente"}, {"id": "mo9sye78p72z8iuvcnj", "fecha": "2026-04-08", "numero": "2610", "clienteId": "mo9sye78m9jg6xyhc38", "mercanciaId": "mo9sye78jbdr29ol7o", "deuda": 12351.6, "arrastre": 0, "estatus": "Pendiente"}], "dalmiami_pagos": [{"id": "p001", "fecha": "2026-01-15", "facturaId": "mo9sye78dlrqb2utm2e", "monto": 19467.3, "notas": "CHASE BANK"}, {"id": "p002", "fecha": "2026-01-15", "facturaId": "mo9sye78u0ataqo6keh", "monto": 18627.9, "notas": "Chase bank"}, {"id": "p003", "fecha": "2026-01-15", "facturaId": "mo9sye78ip94gsj1qgc", "monto": 18627.9, "notas": "Pago recibido"}, {"id": "p004", "fecha": "2026-03-02", "facturaId": "mo9sye78fg71fb6op6t", "monto": 20000, "notas": "Pago recibido"}, {"id": "p005", "fecha": "2026-03-02", "facturaId": "mo9sye78gsoz1fsq2qm", "monto": 10000, "notas": "Pago recibido"}, {"id": "p006", "fecha": "2026-03-16", "facturaId": "mo9sye788dfjrvow64", "monto": 28275.16, "notas": "Pago recibido"}, {"id": "p007", "fecha": "2026-04-02", "facturaId": "mo9sye78g7zukokv2hi", "monto": 20000, "notas": "Chase bank"}, {"id": "p008", "fecha": "2026-04-05", "facturaId": "mo9sye78gsoz1fsq2qm", "monto": 14974.5, "notas": "THE BANK OF NEW YORK MELLON — Caribbean Online Services"}, {"id": "p009", "fecha": "2026-04-22", "facturaId": "mo9sye788dfjrvow64", "monto": 4900.84, "notas": "Wire Caribbean Online Services 22/04"}, {"id": "p010", "fecha": "2026-04-22", "facturaId": "mo9sye7805el11envunk", "monto": 12372.75, "notas": "Wire Caribbean Online Services 22/04"}, {"id": "p011", "fecha": "2026-04-22", "facturaId": "mo9sye78fg71fb6op6t", "monto": 5540.75, "notas": "Wire Caribbean Online Services 22/04"}, {"id": "p012", "fecha": "2026-04-22", "facturaId": "mo9sye78gsoz1fsq2qm", "monto": 6825.4, "notas": "Wire Caribbean Online Services 22/04"}], "dal_empresa_actual": "dal"};
+    Object.entries(data).forEach(([k,v]) => {
+      localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
     });
-
-    const data = {"sys_empresas_v2": {"dal": {"key": "dal", "nombre": "DAL MIAMI EXPORT LLC", "sub": "Export LLC — Libro de Asiento", "ein": "EIN: 93-1412443", "dbPrefix": "dalmiami_", "direccion": "3901 SW 78th CT Miami FL-33155", "email": "dalmiami9@gmail.com", "tel": "+1 786-839-1403", "colorPrimary": "#e02020", "colorSecondary": "#2060c0", "colorAccent": "#202020", "banco": "JPMORGAN CHASE BANK, N.A", "swift": "267084131", "cuenta": "960559521 USD", "gerente": "Diego Hernández", "cargoGerente": "Gerente Financiero", "presidente": "Alejandro De Lara", "firmaSVG": null, "cunoSVG": null, "logo": null}}, "dalmiami_mercancias": [{"id": "mo9satc69urowiwdae5", "nombre": "Frozen 4x10 Lb Poly- Bagged", "codigo": "", "unidad": "KG", "precio": 0, "categoria": "Pollo", "descripcion": ""}, {"id": "mo9sye78pb74h8bsdu", "nombre": "Frozen 4x10 Lb PolyBagged", "unidad": "Caja", "categoria": "Alimentos", "descripcion": "Pollo congelado 4x10 Lb en bolsa"}, {"id": "mo9sye7806ql2i6vv6fy", "nombre": "Frozen Pork Boneless Loin", "unidad": "KG", "categoria": "Alimentos", "descripcion": "Lomo de cerdo deshuesado congelado"}, {"id": "mo9sye78jbdr29ol7o", "nombre": "Sanderson Farms Frozen Half Bird", "unidad": "Caja", "categoria": "Alimentos", "descripcion": "Pollo entero Sanderson Farms congelado, medio"}, {"id": "moa14lrxze7mllcptu", "nombre": "Frozen 4x10 Lb Poly-Bagged", "unidad": "Caja", "categoria": "Pollo", "descripcion": "Pollo congelado 4x10 Lb en bolsa"}], "dalmiami_pagos": [{"id": "p001", "fecha": "2026-01-15", "facturaId": "mo9sye78dlrqb2utm2e", "monto": 19467.3, "notas": "CHASE BANK"}, {"id": "p002", "fecha": "2026-01-15", "facturaId": "mo9sye78u0ataqo6keh", "monto": 18627.9, "notas": "Chase bank"}, {"id": "p003", "fecha": "2026-01-15", "facturaId": "mo9sye78ip94gsj1qgc", "monto": 18627.9, "notas": "Pago recibido"}, {"id": "p004", "fecha": "2026-03-02", "facturaId": "mo9sye78fg71fb6op6t", "monto": 20000, "notas": "Pago recibido"}, {"id": "p005", "fecha": "2026-03-02", "facturaId": "mo9sye78gsoz1fsq2qm", "monto": 10000, "notas": "Pago recibido"}, {"id": "p006", "fecha": "2026-03-16", "facturaId": "mo9sye788dfjrvow64", "monto": 28275.16, "notas": "Pago recibido"}, {"id": "p007", "fecha": "2026-04-02", "facturaId": "mo9sye78g7zukokv2hi", "monto": 20000, "notas": "Chase bank"}, {"id": "p008", "fecha": "2026-04-05", "facturaId": "mo9sye78gsoz1fsq2qm", "monto": 14974.5, "notas": "THE BANK OF NEW YORK MELLON — Caribbean Online Services"}, {"id": "p009", "fecha": "2026-04-22", "facturaId": "mo9sye788dfjrvow64", "monto": 4900.84, "notas": "Wire Caribbean Online Services 22/04"}, {"id": "p010", "fecha": "2026-04-22", "facturaId": "mo9sye7805el11envunk", "monto": 12372.75, "notas": "Wire Caribbean Online Services 22/04"}, {"id": "p011", "fecha": "2026-04-22", "facturaId": "mo9sye78fg71fb6op6t", "monto": 5540.75, "notas": "Wire Caribbean Online Services 22/04"}, {"id": "p012", "fecha": "2026-04-22", "facturaId": "mo9sye78gsoz1fsq2qm", "monto": 6825.4, "notas": "Wire Caribbean Online Services 22/04"}], "dalmiami_clientes": [{"id": "mo9sye788uw1azyvi3u", "nombre": "La Catedral SURL", "cif": "50004348171", "pais": "Cuba", "direccion": "Calle 8 entre Calazada y 5ta, Plaza, La Habana", "telefono": "+5352832090", "email": "catedralrestaurantecuba@gmail.com", "notas": "", "creado": "2026-04-22T07:19:33.814Z"}, {"id": "mo9sye78q8octpmjl99", "nombre": "CEDA SURL", "cif": "50004244884", "pais": "Cuba", "direccion": "Santo Tomas y Subirana, Centro Habana", "telefono": "+53 5 2581003", "email": "cedasubirana@gmail.com", "notas": "", "creado": "2026-04-22T07:21:35.973Z"}, {"id": "mo9sye780o9eau46z3zj", "nombre": "Santa Barbara SURL", "cif": "", "pais": "Cuba", "direccion": "Calle M entre linea y 17, Plaza, La Habana", "telefono": "+53 5 2645177", "email": "", "notas": "", "creado": "2026-04-22T07:25:57.846Z"}, {"id": "mo9sye78m9jg6xyhc38", "nombre": "MERCY SURL", "pais": "Cuba"}], "dalmiami_facturas": [{"id": "mo9sye78dlrqb2utm2e", "fecha": "2026-01-12", "numero": "2601", "clienteId": "mo9sye788uw1azyvi3u", "mercanciaId": "moa14lrxze7mllcptu", "deuda": 18627.9, "arrastre": 0, "estatus": "Pagado"}, {"id": "mo9sye78u0ataqo6keh", "fecha": "2026-01-12", "numero": "2602", "clienteId": "mo9sye78q8octpmjl99", "mercanciaId": "moa14lrxze7mllcptu", "deuda": 18627.9, "arrastre": 0, "estatus": "Pagado"}, {"id": "mo9sye78g7zukokv2hi", "fecha": "2026-01-12", "numero": "2603", "clienteId": "mo9sye78m9jg6xyhc38", "mercanciaId": "moa14lrxze7mllcptu", "deuda": 18627.9, "arrastre": 0, "estatus": "Pagado"}, {"id": "mo9sye78ip94gsj1qgc", "fecha": "2026-01-12", "numero": "2604", "clienteId": "mo9sye780o9eau46z3zj", "mercanciaId": "moa14lrxze7mllcptu", "deuda": 18627.9, "arrastre": 0, "estatus": "Pagado"}, {"id": "mo9sye788dfjrvow64", "fecha": "2026-02-15", "numero": "2605", "clienteId": "mo9sye788uw1azyvi3u", "mercanciaId": "mo9sye7806ql2i6vv6fy", "deuda": 33176, "arrastre": 0, "estatus": "Pagado parcialmente"}, {"id": "mo9sye78fg71fb6op6t", "fecha": "2026-02-15", "numero": "2606", "clienteId": "mo9sye78q8octpmjl99", "mercanciaId": "mo9sye7806ql2i6vv6fy", "deuda": 33168, "arrastre": 0, "estatus": "Pagado parcialmente"}, {"id": "mo9sye78gsoz1fsq2qm", "fecha": "2026-02-15", "numero": "2607", "clienteId": "mo9sye78m9jg6xyhc38", "mercanciaId": "mo9sye7806ql2i6vv6fy", "deuda": 33172, "arrastre": 0, "estatus": "Pagado parcialmente"}, {"id": "mo9sye7805el11envunk", "fecha": "2026-04-08", "numero": "2608", "clienteId": "mo9sye788uw1azyvi3u", "mercanciaId": "mo9sye78jbdr29ol7o", "deuda": 12372.75, "arrastre": 0, "estatus": "Pendiente"}, {"id": "mo9sye78uch4xlkbqg", "fecha": "2026-04-08", "numero": "2609", "clienteId": "mo9sye78q8octpmjl99", "mercanciaId": "mo9sye78jbdr29ol7o", "deuda": 12372.75, "arrastre": 0, "estatus": "Pendiente"}, {"id": "mo9sye78p72z8iuvcnj", "fecha": "2026-04-08", "numero": "2610", "clienteId": "mo9sye78m9jg6xyhc38", "mercanciaId": "mo9sye78jbdr29ol7o", "deuda": 12351.6, "arrastre": 0, "estatus": "Pendiente"}], "dal_empresa_actual": "dal"};
-    let n = 0;
-    Object.entries(data).forEach(([k, v]) => {
-      try {
-        localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
-        n++;
-      } catch(e) { console.warn('skip:', k, e); }
-    });
-    localStorage.setItem('sifa_auto_restored_v2', '1');
-    console.log('SiFa v2 auto-restore OK: ' + n + ' claves');
-  } catch(e) {
-    console.error('Auto-restore error:', e);
-  }
+    localStorage.setItem('sifa_auto_restored_v2','1');
+  } catch(e) { console.error(e); }
 })();
-
-
-
-
-// File input listener — más compatible con iOS Safari y GitHub Pages
-document.addEventListener('DOMContentLoaded', function() {
-  const inp = document.getElementById('inputImportBackup');
-  if (inp) inp.addEventListener('change', function() { importarBackup(this); });
-});
-// Fallback por si DOMContentLoaded ya pasó
-(function() {
-  const inp = document.getElementById('inputImportBackup');
-  if (inp && !inp._listenerAdded) {
-    inp.addEventListener('change', function() { importarBackup(this); });
-    inp._listenerAdded = true;
-  }
-})();
-
-
-// ── DAL Book — Arranque ──
-// El auto-restore ya corrió arriba y escribió todo al localStorage.
-// Ahora limpiamos flags viejos, inicializamos y cargamos.
 
 initEmpresas();
-
-// Limpiar flags de seeds viejos para que gastos se recargue
-localStorage.removeItem('sifa_seed_dalmiami_v1');
-localStorage.removeItem('sifa_seed_dalmiami_v2');
-
-// Forzar DAL como activa y cargar
-localStorage.setItem('dal_empresa_actual', 'dal');
-
+['sifa_seed_dalmiami_v1','sifa_seed_dalmiami_v2'].forEach(k=>localStorage.removeItem(k));
+localStorage.setItem('dal_empresa_actual','dal');
 const _dalEmp = getEmpresa('dal');
 if (_dalEmp) {
   cargarDatosEmpresa(_dalEmp);
   applyEmpresaTheme(_dalEmp);
-  // Correr seed de gastos (Enero-Febrero-Marzo Chase)
   if (typeof seedGastosDalMiami === 'function') seedGastosDalMiami();
   if (typeof actualizarBtnClaude === 'function') actualizarBtnClaude();
 }
