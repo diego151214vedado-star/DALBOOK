@@ -1268,22 +1268,6 @@ if ('serviceWorker' in navigator) {
 
 
 
-
-<div id="diag" style="position:fixed;bottom:0;left:0;right:0;background:#1a0000;color:#ff6b6b;font-family:monospace;font-size:11px;padding:8px;z-index:99999;max-height:40vh;overflow-y:auto;border-top:2px solid red">
-<strong>DAL Book Diagnóstico:</strong><br>
-</div>
-<script>
-function diag(msg) {
-  const d = document.getElementById('diag');
-  if(d) d.innerHTML += msg + '<br>';
-  console.log(msg);
-}
-window.onerror = function(msg,src,line,col,err) {
-  diag('❌ ERROR: ' + msg + ' (línea '+line+')');
-};
-diag('✓ Script iniciando...');
-</script>
-
 <script>
 // ═══════════════════════════════════════════════
 // EMPRESAS — todas editables, guardadas en localStorage
@@ -1360,9 +1344,9 @@ function seleccionarEmpresa(key) {
   cargarDatosEmpresa(emp);
   applyEmpresaTheme(emp);
   updateBadges();
-  diag('✓ showSection dashboard');
-showSection('dashboard'); // se queda en empresas, activa resaltada
+  showSection('dashboard');
   actualizarBtnClaude();
+}
 
 function seleccionarEmpresaDirecta(key) {
   const emp=getEmpresa(key); if(!emp) return;
@@ -1824,12 +1808,7 @@ function renderPagos() {
 }
 
 // ── Editar empresa desde el dashboard ──
-function editEmpresaActiva() { return; // DAL Book — empresa fija
-  if(false) {
-  if (!empresaActual) return;
-  const actKey = localStorage.getItem('dal_empresa_actual');
-  if (actKey) editEmpresaModal(actKey);
-}
+function editEmpresaActiva() { return; } // DAL Book — empresa fija
 
 // ═══ DASHBOARD ═══
 function renderDashboard() {
@@ -4132,7 +4111,6 @@ updateDate();
 setInterval(updateDate, 60000);
 
 // ═══ DAL Book — Carga inicial ═══
-diag("✓ Auto-restore corriendo...");
 (function() {
   try {
     if (localStorage.getItem('sifa_auto_restored_v2')) return;
@@ -4141,8 +4119,7 @@ diag("✓ Auto-restore corriendo...");
       localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
     });
     localStorage.setItem('sifa_auto_restored_v2','1');
-diag('✓ Datos escritos al localStorage');
-  } catch(e) { console.error(e); diag('❌ Error restore: '+e.message); }
+  } catch(e) { console.error(e); }
 })();
 
 initEmpresas();
@@ -4156,9 +4133,7 @@ const _dalData = {"key":"dal","nombre":"DAL MIAMI EXPORT LLC","sub":"Export LLC 
 const _todasEmp = getTodasEmpresas();
 if (!_todasEmp['dal']) { _todasEmp['dal'] = _dalData; saveTodasEmpresas(_todasEmp); }
 
-diag('✓ cargarDatosEmpresa llamado');
 cargarDatosEmpresa(_dalData);
-diag('✓ clientes:'+clientes.length+' facturas:'+facturas.length+' pagos:'+pagos.length);
 applyEmpresaTheme(_dalData);
 if (typeof seedGastosDalMiami === 'function') seedGastosDalMiami();
 if (typeof actualizarBtnClaude === 'function') actualizarBtnClaude();
