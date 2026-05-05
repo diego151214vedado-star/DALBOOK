@@ -3336,9 +3336,9 @@ function renderGastos() {
 // Febrero y Marzo 2026
 function seedGastosDalMiami() {
   if (!empresaActual || empresaActual.dbPrefix !== 'dalmiami_') return;
-  // Solo omitir si ya tiene datos de Enero 2026 (seed completo)
-  const tieneEnero = gastos.some(g => g.fecha && g.fecha.startsWith('2026-01'));
-  if (tieneEnero) return;
+  // Solo omitir si ya tiene datos de Abril 2026 (seed completo v3)
+  const tieneAbril = gastos.some(g => g.fecha && g.fecha.startsWith('2026-04') && g.concepto && g.concepto.includes('Ring'));
+  if (tieneAbril) return;
 
   const seed = [
     // ══ ENERO 2026 ══
@@ -3394,6 +3394,17 @@ function seedGastosDalMiami() {
     {id:uid(),fecha:'2026-03-25',concepto:'Auto Insurance UAIC',categoria:'Servicios',monto:273.28,metodo:'Tarjeta',proveedor:'UAIC 305-940-5022',referencia:'FL Card 4410',notas:'⚠️ Seguro auto — confirmar % uso negocio con CPA'},
     {id:uid(),fecha:'2026-03-30',concepto:'Ring Multi Plan — Alarma',categoria:'Servicios',monto:10.69,metodo:'Tarjeta',proveedor:'Ring.com',referencia:'CA Card 4410',notas:'Suscripción mensual'},
     {id:uid(),fecha:'2026-03-31',concepto:'Southeast Toyota Finance — Cuota vehículo',categoria:'Operacional',monto:526.13,metodo:'Online Payment',proveedor:'Southeast Toyota Finance',referencia:'28208283073',notas:'Cuota mensual auto'},
+
+    // ══ ABRIL 2026 ══
+    {id:uid(),fecha:'2026-04-02',concepto:'Domestic Incoming Wire Fee',categoria:'Bancario',monto:15.00,metodo:'Bancario',proveedor:'JPMorgan Chase',referencia:'Imad: 0402B1Q8152C280588',notas:'Fee wire entrante — Caribbean Online Services Parcial 2026007 ($14,974.50 neto)'},
+    {id:uid(),fecha:'2026-04-03',concepto:'Experian Credit Report',categoria:'Servicios',monto:9.99,metodo:'Tarjeta',proveedor:'Experian',referencia:'479-3436237 CA Card 4410',notas:'Suscripción mensual'},
+    {id:uid(),fecha:'2026-04-08',concepto:'Wire Transfer — Pedro Hernandez Marquez',categoria:'Nómina',monto:2000.00,metodo:'Transferencia',proveedor:'Pedro Hernandez Marquez Miami FL',referencia:'Acc/722035907 Trn: 3079496098Es',notas:'⚠️ Distribución mensual socio 1% — confirmar con CPA si es guaranteed payment o draw'},
+    {id:uid(),fecha:'2026-04-08',concepto:'Online Domestic Wire Fee',categoria:'Bancario',monto:25.00,metodo:'Bancario',proveedor:'JPMorgan Chase',referencia:'',notas:'Fee wire saliente a Pedro Hernandez'},
+    {id:uid(),fecha:'2026-04-17',concepto:'Ring Multi Plan — Alarma',categoria:'Servicios',monto:10.69,metodo:'Tarjeta',proveedor:'Ring.com',referencia:'CA Card 4410',notas:'Suscripción mensual'},
+    {id:uid(),fecha:'2026-04-22',concepto:'Domestic Incoming Wire Fee',categoria:'Bancario',monto:15.00,metodo:'Bancario',proveedor:'JPMorgan Chase',referencia:'Imad: 0422B1Q8153C675352',notas:'Fee wire entrante — Caribbean Online Services Parcial 2026008 ($28,765.34 neto)'},
+    {id:uid(),fecha:'2026-04-27',concepto:'Auto Insurance UAIC',categoria:'Operacional',monto:273.28,metodo:'Tarjeta',proveedor:'UAIC 305-940-5022',referencia:'FL Card 4410',notas:'⚠️ Seguro auto — confirmar % uso negocio vs personal con CPA (Alejandro De Lara Card 4410)'},
+    {id:uid(),fecha:'2026-04-30',concepto:'Ring Multi Plan — Alarma',categoria:'Servicios',monto:10.69,metodo:'Tarjeta',proveedor:'Ring.com',referencia:'CA Card 4410',notas:'Suscripción mensual'},
+    {id:uid(),fecha:'2026-04-30',concepto:'Southeast Toyota Finance — Cuota vehículo',categoria:'Operacional',monto:526.13,metodo:'Online Payment',proveedor:'Southeast Toyota Finance',referencia:'28633846154',notas:'⚠️ Cuota mensual auto — confirmar titularidad LLC vs personal con CPA'},
   ].map(g => ({ ...g, creado: new Date().toISOString() }));
 
   // Reemplazar completamente — seed oficial con los 3 meses
