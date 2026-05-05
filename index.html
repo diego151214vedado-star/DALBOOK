@@ -624,6 +624,7 @@ if ('serviceWorker' in navigator) {
           <option value="Bancario">🏦 Bancario</option>
           <option value="Otro">📋 Otro</option>
         </select>
+        <button class="btn btn-secondary" onclick="exportarReporteSocio()" style="gap:6px">📤 Reporte al Socio</button>
         <button class="btn btn-primary" onclick="openModal('modalGasto')">＋ Nuevo Gasto</button>
       </div>
     </div>
@@ -3276,6 +3277,164 @@ function deleteGasto(id) {
   gastos = gastos.filter(g => g.id !== id);
   saveGastosDB(); renderGastos(); updateBadges(); renderDashboard();
   toast('Gasto eliminado');
+}
+
+function exportarReporteSocio() {
+  const filtMes = document.getElementById('filtroMesGasto').value;
+  const filtCat = document.getElementById('filtroCatGasto').value;
+
+  // Gastos del período filtrado que NO están excluidos (son del socio)
+  let rows = [...gastos].sort((a, b) => a.fecha.localeCompare(b.fecha));
+  if (filtMes) rows = rows.filter(g => g.fecha && g.fecha.slice(5,7) === filtMes);
+  if (filtCat) rows = rows.filter(g => g.categoria === filtCat);
+  const gastosSocio = rows.filter(g => !g.excluido);
+
+  if (!gastosSocio.length) {
+    toast('No hay gastos del socio en este período', 'error');
+    return;
+  }
+
+  const MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const periodoLabel = filtMes ? `${MESES[parseInt(filtMes)]} 2026` : 'Período completo';
+  const hoy = new Date().toLocaleDateString('es',{year:'numeric',month:'long',day:'numeric'});
+  const emp = empresaActual || {};
+  const pc  = emp.colorPrimary || '#E8202A';
+
+  const total = gastosSocio.reduce((s,g) => s + (parseFloat(g.monto)||0), 0);
+
+  // Agrupar por categoría para el resumen
+  const porCat = {};
+  gastosSocio.forEach(g => { porCat[g.categoria] = (porCat[g.categoria]||0) + (parseFloat(g.monto)||0); });
+
+  const filasDetalle = gastosSocio.map((g, i) => `
+    <tr style="background:${i%2===0?'#f9f9fc':'#fff'}">
+      <td style="padding:8px 10px;font-size:11px;border-bottom:1px solid #eee">${fmtDate(g.fecha)}</td>
+      <td style="padding:8px 10px;font-size:11px;border-bottom:1px solid #eee">${g.categoria}</td>
+      <td style="padding:8px 10px;font-size:11px;border-bottom:1px solid #eee;font-weight:500">${g.concepto}</td>
+      <td style="padding:8px 10px;font-size:11px;border-bottom:1px solid #eee;color:#666">${g.proveedor||'—'}</td>
+      <td style="padding:8px 10px;font-size:11px;border-bottom:1px solid #eee;text-align:right;font-weight:700;color:#dc2626">${fmtUSD(g.monto)}</td>
+      <td style="padding:8px 10px;font-size:11px;border-bottom:1px solid #eee;color:#888">${g.metodo||'—'}</td>
+    </tr>`).join('');
+
+  const filasCat = Object.entries(porCat).sort((a,b)=>b[1]-a[1]).map(([cat, monto]) => `
+    <tr>
+      <td style="padding:6px 12px;font-size:11px">${GASTO_CAT_ICONS[cat]||'📋'} ${cat}</td>
+      <td style="padding:6px 12px;font-size:11px;text-align:right;font-weight:700">${fmtUSD(monto)}</td>
+      <td style="padding:6px 12px;font-size:11px;text-align:right;color:#888">${((monto/total)*100).toFixed(1)}%</td>
+    </tr>`).join('');
+
+  const logoH = emp.logo
+    ? `<img src="${emp.logo}" style="height:44px;object-fit:contain;mix-blend-mode:multiply">`
+    : `<div style="font-size:18px;font-weight:900;color:${pc}">${emp.nombre||'DAL MIAMI EXPORT LLC'}</div>`;
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reporte de Gastos — ${periodoLabel}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: Arial, sans-serif; color: #1a1a2e; background: #fff; padding: 28px; }
+  @media print { body { padding: 10px; } @page { margin: 1cm; size: A4; } }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;border-bottom:3px solid ${pc};margin-bottom:20px">
+  <div>
+    ${logoH}
+    <div style="font-size:9px;color:#888;margin-top:4px;line-height:1.8">
+      ${emp.direccion||''} ${emp.ein?'· '+emp.ein:''}<br>
+      ${emp.banco?emp.banco+' · Cta: '+emp.cuenta:''}
+    </div>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:13px;font-weight:900;color:${pc};text-transform:uppercase;letter-spacing:1px">Reporte de Gastos</div>
+    <div style="font-size:11px;color:#888;margin-top:4px">Período: <strong>${periodoLabel}</strong></div>
+    <div style="font-size:10px;color:#aaa;margin-top:2px">${hoy}</div>
+  </div>
+</div>
+
+<!-- DESTINATARIO -->
+<div style="background:#f5f5f5;border-left:4px solid ${pc};padding:14px 18px;border-radius:0 8px 8px 0;margin-bottom:24px">
+  <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:4px;letter-spacing:1px">Estimado socio</div>
+  <div style="font-size:18px;font-weight:700">Alejandro De Lara</div>
+  <div style="font-size:11px;color:#666;margin-top:2px">Socio Mayoritario — DAL Miami Export LLC</div>
+</div>
+
+<div style="font-size:12px;color:#444;line-height:1.8;margin-bottom:20px">
+  A continuación se detallan los gastos incurridos durante el período <strong>${periodoLabel}</strong>
+  que corresponden a su responsabilidad como socio de la empresa. 
+  Le solicitamos respetuosamente la revisión y rendición de los mismos.
+</div>
+
+<!-- RESUMEN POR CATEGORÍA -->
+<div style="margin-bottom:24px">
+  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#888;margin-bottom:10px">Resumen por categoría</div>
+  <table style="width:100%;border-collapse:collapse;border:1px solid #e0e0e8;border-radius:8px;overflow:hidden">
+    <thead>
+      <tr style="background:#1a1a2e;color:#fff">
+        <th style="padding:8px 12px;text-align:left;font-size:9px">CATEGORÍA</th>
+        <th style="padding:8px 12px;text-align:right;font-size:9px">MONTO</th>
+        <th style="padding:8px 12px;text-align:right;font-size:9px">%</th>
+      </tr>
+    </thead>
+    <tbody>${filasCat}</tbody>
+    <tfoot>
+      <tr style="background:${pc}15;border-top:2px solid ${pc}">
+        <td style="padding:10px 12px;font-weight:900;font-size:13px">TOTAL A RENDIR</td>
+        <td style="padding:10px 12px;text-align:right;font-weight:900;font-size:16px;color:${pc}">${fmtUSD(total)}</td>
+        <td style="padding:10px 12px;text-align:right;font-size:11px;color:#888">100%</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<!-- DETALLE COMPLETO -->
+<div style="margin-bottom:8px">
+  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#888;margin-bottom:10px">Detalle de transacciones (${gastosSocio.length})</div>
+  <table style="width:100%;border-collapse:collapse">
+    <thead>
+      <tr style="background:#f0f0f5">
+        <th style="padding:8px 10px;text-align:left;font-size:9px;border-bottom:2px solid #ddd">FECHA</th>
+        <th style="padding:8px 10px;text-align:left;font-size:9px;border-bottom:2px solid #ddd">CATEGORÍA</th>
+        <th style="padding:8px 10px;text-align:left;font-size:9px;border-bottom:2px solid #ddd">CONCEPTO</th>
+        <th style="padding:8px 10px;text-align:left;font-size:9px;border-bottom:2px solid #ddd">PROVEEDOR</th>
+        <th style="padding:8px 10px;text-align:right;font-size:9px;border-bottom:2px solid #ddd">MONTO</th>
+        <th style="padding:8px 10px;text-align:left;font-size:9px;border-bottom:2px solid #ddd">MÉTODO</th>
+      </tr>
+    </thead>
+    <tbody>${filasDetalle}</tbody>
+  </table>
+</div>
+
+<!-- PIE -->
+<div style="margin-top:32px;padding-top:16px;border-top:1px solid #e0e0e8;display:flex;justify-content:space-between;align-items:flex-end">
+  <div>
+    <div style="width:160px;border-bottom:1px solid #aaa;margin-bottom:6px;height:24px"></div>
+    <div style="font-size:11px;font-weight:700">${emp.gerente||'Diego Hernández'}</div>
+    <div style="font-size:9px;color:#888;text-transform:uppercase">${emp.cargoGerente||'Gerente Financiero'}</div>
+    <div style="font-size:9px;color:#aaa;margin-top:2px">${emp.ein||''}</div>
+  </div>
+  <div style="text-align:right;font-size:9px;color:#aaa;line-height:1.9">
+    ${hoy}<br>
+    Generado por DAL Book<br>
+    ${emp.email||''}
+  </div>
+</div>
+
+</body>
+</html>`;
+
+  // Abrir como blob — en iOS activa el share sheet nativo al tocar "Compartir"
+  const blob = new Blob([html], {type:'text/html'});
+  const url  = URL.createObjectURL(blob);
+  const win  = window.open(url, '_blank');
+  if (!win) toast('Permite ventanas emergentes para generar el reporte', 'error');
+  else setTimeout(() => { try { win.print(); } catch(e) {} }, 1000);
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 
 function toggleGastoExcluido(id) {
