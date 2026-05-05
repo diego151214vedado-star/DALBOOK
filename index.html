@@ -478,9 +478,9 @@ if ('serviceWorker' in navigator) {
       <span class="nav-icon">📋</span><span class="nav-label">Facturas/Invoice</span>
       <span class="badge" id="badge-invoices">0</span>
     </button>
-    <button class="nav-tab" onclick="showSection('documentos')" id="tab-documentos">
-      <span class="nav-icon">📄</span><span class="nav-label">Documentos</span>
-      <span class="badge" id="badge-documentos">0</span>
+    <button class="nav-tab" onclick="showSection('ofertas')" id="tab-ofertas">
+      <span class="nav-icon">📝</span><span class="nav-label">Ofertas</span>
+      <span class="badge" id="badge-ofertas">0</span>
     </button>
 
 
@@ -796,18 +796,18 @@ if ('serviceWorker' in navigator) {
     </div>
   </div>
 
-  <!-- DOCUMENTOS COMPLEMENTARIOS (no generan deuda) -->
-  <div class="section" id="section-documentos">
+  <!-- OFERTAS -->
+  <div class="section" id="section-ofertas">
     <div class="page-header">
       <div>
-        <div class="page-title">DOCUMENTOS <span>COMPLEMENTARIOS</span></div>
-        <div class="page-sub">Conduces, órdenes de entrega y más — solo PDF, sin impacto financiero</div>
+        <div class="page-title">REGISTRO DE <span>OFERTAS</span></div>
+        <div class="page-sub">Propuestas comerciales — sin impacto contable</div>
       </div>
-      <button class="btn btn-primary" onclick="abrirNuevoDocComplementario()">＋ Nuevo Documento</button>
+      <button class="btn btn-primary" onclick="abrirNuevaOferta()">＋ Nueva Oferta</button>
     </div>
     <div class="table-wrapper">
-      <table><thead><tr><th>Fecha</th><th>N° Documento</th><th>Tipo</th><th>Emisor</th><th>Cliente / Destinatario</th><th>Acciones</th></tr></thead>
-      <tbody id="documentosTable"></tbody></table>
+      <table><thead><tr><th>Fecha</th><th>N° Oferta</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Acciones</th></tr></thead>
+      <tbody id="ofertasTable"></tbody></table>
     </div>
   </div>
 
@@ -1185,8 +1185,8 @@ if ('serviceWorker' in navigator) {
 
     <div class="form-actions">
       <button class="btn btn-secondary" onclick="closeModal('modalInvoice')">Cancelar</button>
-      <button class="btn btn-blue" onclick="guardarInvoice()">💾 Guardar</button>
-      <button class="btn btn-primary" onclick="generarInvoice()">📋 Generar PDF</button>
+      <button class="btn btn-blue" onclick="document.getElementById('modalInvoice').dataset.modoOferta==='1'?guardarOfertaModal():guardarInvoice()">💾 Guardar</button>
+      <button class="btn btn-primary" onclick="document.getElementById('modalInvoice').dataset.modoOferta==='1'?generarOfertaModal():generarInvoice()">📋 Generar PDF</button>
     </div>
   </div>
 </div>
@@ -1303,6 +1303,7 @@ let empresaActual = null, _logoBase64 = null;
 let clientes=[], mercancias=[], facturas=[], pagos=[];
 let invoices=[], calculos=[], anticipios=[];
 let gastos=[];
+let ofertas=[];
 let concClienteId=null, excedentePendiente=null;
 
 // ═══ CARGAR DATOS AISLADOS POR EMPRESA ═══
@@ -1329,6 +1330,7 @@ function cargarDatosEmpresa(emp) {
   calculos   = JSON.parse(localStorage.getItem(p + 'calculos')   || '[]');
   anticipios = JSON.parse(localStorage.getItem(p + 'anticipos')  || '[]');
   gastos     = JSON.parse(localStorage.getItem(p + 'gastos')     || '[]');
+  ofertas    = JSON.parse(localStorage.getItem(p + 'ofertas')    || '[]');
   // Seed de gastos bancarios si la empresa es DAL Miami y no hay gastos aún
   if (emp.dbPrefix === 'dalmiami_' && gastos.length === 0) {
     // Se ejecuta tras completar init
@@ -1396,6 +1398,10 @@ function saveGastosDB() {
   if (!_assertEmpresa()) return;
   localStorage.setItem(empresaActual.dbPrefix + 'gastos', JSON.stringify(gastos));
 }
+function saveOfertasDB() {
+  if (!_assertEmpresa()) return;
+  localStorage.setItem(empresaActual.dbPrefix + 'ofertas', JSON.stringify(ofertas));
+}
 
 // ═══ UTILS ═══
 function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2); }
@@ -1427,10 +1433,11 @@ const _SECTION_TITLES = {
   facturas:    'REGISTRO DE <span>FACTURAS</span>',
   pagos:       'REGISTRO DE <span>COBROS</span>',
   invoices:    'FACTURAS / <span>INVOICES</span>',
-  documentos:  'DOCUMENTOS <span>COMPLEMENTARIOS</span>',
+  ofertas:     'REGISTRO DE <span>OFERTAS</span>',
   calc:        'FORMACIÓN DE <span>PRECIOS</span>',
   gastos:      'REGISTRO DE <span>GASTOS</span>',
   pnl:         'ESTADO DE <span>RESULTADOS</span>',
+  ofertas:     'REGISTRO DE <span>OFERTAS</span>',
   empresas:    'SELECCIÓN DE <span>EMPRESA</span>',
 };
 
@@ -1465,10 +1472,11 @@ function showSection(id) {
   if (id === 'facturas')    renderFacturas();
   if (id === 'pagos')       renderPagos();
   if (id === 'invoices')    renderInvoices();
-  if (id === 'documentos')  renderDocumentos();
+  if (id === 'ofertas')     renderOfertas();
   if (id === 'calc')        renderCalc();
   if (id === 'gastos')      renderGastos();
   if (id === 'pnl')         renderPnl();
+  if (id === 'ofertas')     renderOfertas();
 }
 
 
@@ -2216,7 +2224,7 @@ function guardarInvoice() {
   }
 
   delete document.getElementById('inv_id').dataset.facturaOrigen;
-  saveInvoicesDB(); closeModal('modalInvoice'); renderInvoices(); renderDocumentos(); renderFacturas(); updateBadges();
+  saveInvoicesDB(); closeModal('modalInvoice'); renderInvoices(); renderFacturas(); updateBadges();
 }
 
 function generarInvoice() {
@@ -2244,7 +2252,7 @@ function generarInvoice() {
   }
 
   delete document.getElementById('inv_id').dataset.facturaOrigen;
-  saveInvoicesDB(); renderInvoices(); renderDocumentos(); renderFacturas(); updateBadges();
+  saveInvoicesDB(); renderInvoices(); renderFacturas(); updateBadges();
   abrirInvoicePDF(data); closeModal('modalInvoice');
 }
 
@@ -2364,7 +2372,7 @@ function deleteInvoice(id) {
     }
   }
   invoices = invoices.filter(x => x.id !== id);
-  saveInvoicesDB(); renderInvoices(); renderDocumentos(); renderFacturas(); updateBadges();
+  saveInvoicesDB(); renderInvoices(); renderFacturas(); updateBadges();
   toast('Documento eliminado');
 }
 
@@ -3336,9 +3344,9 @@ function renderGastos() {
 // Febrero y Marzo 2026
 function seedGastosDalMiami() {
   if (!empresaActual || empresaActual.dbPrefix !== 'dalmiami_') return;
-  // Solo omitir si ya tiene datos de Abril 2026 (seed completo v3)
-  const tieneAbril = gastos.some(g => g.fecha && g.fecha.startsWith('2026-04') && g.concepto && g.concepto.includes('Ring'));
-  if (tieneAbril) return;
+  // Solo omitir si ya tiene datos de Enero 2026 (seed completo)
+  const tieneEnero = gastos.some(g => g.fecha && g.fecha.startsWith('2026-01'));
+  if (tieneEnero) return;
 
   const seed = [
     // ══ ENERO 2026 ══
@@ -3394,17 +3402,6 @@ function seedGastosDalMiami() {
     {id:uid(),fecha:'2026-03-25',concepto:'Auto Insurance UAIC',categoria:'Servicios',monto:273.28,metodo:'Tarjeta',proveedor:'UAIC 305-940-5022',referencia:'FL Card 4410',notas:'⚠️ Seguro auto — confirmar % uso negocio con CPA'},
     {id:uid(),fecha:'2026-03-30',concepto:'Ring Multi Plan — Alarma',categoria:'Servicios',monto:10.69,metodo:'Tarjeta',proveedor:'Ring.com',referencia:'CA Card 4410',notas:'Suscripción mensual'},
     {id:uid(),fecha:'2026-03-31',concepto:'Southeast Toyota Finance — Cuota vehículo',categoria:'Operacional',monto:526.13,metodo:'Online Payment',proveedor:'Southeast Toyota Finance',referencia:'28208283073',notas:'Cuota mensual auto'},
-
-    // ══ ABRIL 2026 ══
-    {id:uid(),fecha:'2026-04-02',concepto:'Domestic Incoming Wire Fee',categoria:'Bancario',monto:15.00,metodo:'Bancario',proveedor:'JPMorgan Chase',referencia:'Imad: 0402B1Q8152C280588',notas:'Fee wire entrante — Caribbean Online Services Parcial 2026007 ($14,974.50 neto)'},
-    {id:uid(),fecha:'2026-04-03',concepto:'Experian Credit Report',categoria:'Servicios',monto:9.99,metodo:'Tarjeta',proveedor:'Experian',referencia:'479-3436237 CA Card 4410',notas:'Suscripción mensual'},
-    {id:uid(),fecha:'2026-04-08',concepto:'Wire Transfer — Pedro Hernandez Marquez',categoria:'Nómina',monto:2000.00,metodo:'Transferencia',proveedor:'Pedro Hernandez Marquez Miami FL',referencia:'Acc/722035907 Trn: 3079496098Es',notas:'⚠️ Distribución mensual socio 1% — confirmar con CPA si es guaranteed payment o draw'},
-    {id:uid(),fecha:'2026-04-08',concepto:'Online Domestic Wire Fee',categoria:'Bancario',monto:25.00,metodo:'Bancario',proveedor:'JPMorgan Chase',referencia:'',notas:'Fee wire saliente a Pedro Hernandez'},
-    {id:uid(),fecha:'2026-04-17',concepto:'Ring Multi Plan — Alarma',categoria:'Servicios',monto:10.69,metodo:'Tarjeta',proveedor:'Ring.com',referencia:'CA Card 4410',notas:'Suscripción mensual'},
-    {id:uid(),fecha:'2026-04-22',concepto:'Domestic Incoming Wire Fee',categoria:'Bancario',monto:15.00,metodo:'Bancario',proveedor:'JPMorgan Chase',referencia:'Imad: 0422B1Q8153C675352',notas:'Fee wire entrante — Caribbean Online Services Parcial 2026008 ($28,765.34 neto)'},
-    {id:uid(),fecha:'2026-04-27',concepto:'Auto Insurance UAIC',categoria:'Operacional',monto:273.28,metodo:'Tarjeta',proveedor:'UAIC 305-940-5022',referencia:'FL Card 4410',notas:'⚠️ Seguro auto — confirmar % uso negocio vs personal con CPA (Alejandro De Lara Card 4410)'},
-    {id:uid(),fecha:'2026-04-30',concepto:'Ring Multi Plan — Alarma',categoria:'Servicios',monto:10.69,metodo:'Tarjeta',proveedor:'Ring.com',referencia:'CA Card 4410',notas:'Suscripción mensual'},
-    {id:uid(),fecha:'2026-04-30',concepto:'Southeast Toyota Finance — Cuota vehículo',categoria:'Operacional',monto:526.13,metodo:'Online Payment',proveedor:'Southeast Toyota Finance',referencia:'28633846154',notas:'⚠️ Cuota mensual auto — confirmar titularidad LLC vs personal con CPA'},
   ].map(g => ({ ...g, creado: new Date().toISOString() }));
 
   // Reemplazar completamente — seed oficial con los 3 meses
@@ -3826,6 +3823,143 @@ function actualizarBtnClaude() {
   btn.style.display = (empresaActual && empresaActual.dbPrefix === 'dalmiami_') ? 'inline-flex' : 'none';
 }
 
+// ═══════════════════════════════════════════════
+// MÓDULO OFERTAS
+// ═══════════════════════════════════════════════
+
+function abrirNuevaOferta() {
+  populateInvoiceModal();
+  document.getElementById('modalInvoiceTitle').innerHTML = 'NUEVA <span>OFERTA</span>';
+  document.getElementById('inv_tipo').value = 'I';
+  document.getElementById('inv_titulo').value = 'OFERTA';
+  const nums = ofertas.map(o => parseInt((o.numero||'').replace(/\D/g,''))||0);
+  const next = nums.length ? Math.max(...nums)+1 : 1;
+  document.getElementById('inv_numero').value = 'OF' + String(next).padStart(4,'0');
+  // Override save buttons to use oferta logic
+  document.getElementById('modalInvoice').dataset.modoOferta = '1';
+  document.getElementById('modalInvoice').classList.add('open');
+  document.querySelectorAll('#modalInvoice input[type=date]').forEach(i => { if(!i.value) i.value = new Date().toISOString().split('T')[0]; });
+}
+
+function _getOfertaDataFromModal() {
+  const fecha   = document.getElementById('inv_fecha').value;
+  const numero  = document.getElementById('inv_numero').value.trim();
+  if (!fecha || !numero) { toast('Fecha y número son obligatorios','error'); return null; }
+  const clienteId = document.getElementById('inv_cliente').value;
+  const cliente   = clientes.find(c=>c.id===clienteId)||null;
+  const moneda    = document.getElementById('inv_moneda').value||'USD';
+  const lineas = [];
+  [1,2,3,4].forEach(i => {
+    const pid=document.getElementById('inv_prod_'+i).value;
+    const qty=parseFloat(document.getElementById('inv_qty_'+i).value)||0;
+    const price=parseFloat(document.getElementById('inv_price_'+i).value)||0;
+    if(pid&&qty>0){const m=mercancias.find(x=>x.id===pid);lineas.push({prodId:pid,nombre:m?m.nombre:'—',codigo:document.getElementById('inv_cod_'+i).value.trim(),um:document.getElementById('inv_um_'+i).value||'KG',qty,price,importe:qty*price});}
+  });
+  if(!lineas.length){toast('Agrega al menos un producto','error');return null;}
+  const flete=parseFloat(document.getElementById('inv_flete').value)||0;
+  const seguro=parseFloat(document.getElementById('inv_seguro').value)||0;
+  const subtotal=lineas.reduce((s,l)=>s+l.importe,0);
+  const total=subtotal+flete+seguro;
+  const editId=document.getElementById('inv_id').value;
+  return {id:editId||uid(),fecha,numero,clienteId,cliente,moneda,lineas,subtotal,flete,seguro,total,
+    condicion:document.getElementById('inv_condicion_sel').value,
+    incoterm:document.getElementById('inv_incoterm').value,
+    origen:document.getElementById('inv_origen').value.trim(),
+    puerto:document.getElementById('inv_puerto').value.trim(),
+    notas:document.getElementById('inv_notas').value.trim(),
+    creado:new Date().toISOString()};
+}
+
+function guardarOfertaModal() {
+  const o = _getOfertaDataFromModal(); if(!o) return;
+  const idx = ofertas.findIndex(x=>x.id===o.id);
+  if(idx>=0) ofertas[idx]=o; else ofertas.push(o);
+  saveOfertasDB();
+  document.getElementById('modalInvoice').dataset.modoOferta='';
+  closeModal('modalInvoice');
+  renderOfertas(); updateBadges();
+  toast('Oferta guardada ✅');
+}
+
+function generarOfertaModal() {
+  const o = _getOfertaDataFromModal(); if(!o) return;
+  const idx = ofertas.findIndex(x=>x.id===o.id);
+  if(idx>=0) ofertas[idx]=o; else ofertas.push(o);
+  saveOfertasDB();
+  document.getElementById('modalInvoice').dataset.modoOferta='';
+  closeModal('modalInvoice');
+  renderOfertas(); updateBadges();
+  generarOfertaPDF(o);
+}
+
+function editOferta(id) {
+  const o=ofertas.find(x=>x.id===id); if(!o) return;
+  populateInvoiceModal();
+  document.getElementById('modalInvoiceTitle').innerHTML='EDITAR <span>OFERTA</span>';
+  document.getElementById('inv_id').value=o.id;
+  document.getElementById('inv_fecha').value=o.fecha;
+  document.getElementById('inv_numero').value=o.numero;
+  document.getElementById('inv_moneda').value=o.moneda||'USD';
+  document.getElementById('inv_cliente').value=o.clienteId||'';
+  document.getElementById('inv_flete').value=o.flete||'0';
+  document.getElementById('inv_seguro').value=o.seguro||'0';
+  document.getElementById('inv_notas').value=o.notas||'';
+  document.getElementById('inv_incoterm').value=o.incoterm||'';
+  if(o.clienteId) onSelectInvoiceCliente();
+  (o.lineas||[]).forEach((l,i)=>{if(i>=4)return;const n=i+1;
+    document.getElementById('inv_prod_'+n).value=l.prodId||'';
+    document.getElementById('inv_cod_'+n).value=l.codigo||'';
+    document.getElementById('inv_um_'+n).value=l.um||'';
+    document.getElementById('inv_qty_'+n).value=l.qty||'';
+    document.getElementById('inv_price_'+n).value=l.price||'';
+    calcLinea(n);
+  });
+  document.getElementById('modalInvoice').dataset.modoOferta='1';
+  document.getElementById('modalInvoice').classList.add('open');
+}
+
+function deleteOferta(id) {
+  if(!confirm('¿Eliminar esta oferta?')) return;
+  ofertas=ofertas.filter(o=>o.id!==id);
+  saveOfertasDB(); renderOfertas(); updateBadges(); toast('Oferta eliminada');
+}
+
+function renderOfertas() {
+  const tbody=document.getElementById('ofertasTable'); if(!tbody) return;
+  if(!ofertas.length){tbody.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">📝</div><div class="empty-text">Sin ofertas aún</div><div class="empty-sub">Crea tu primera propuesta comercial</div></div></td></tr>`;return;}
+  tbody.innerHTML=[...ofertas].sort((a,b)=>b.fecha.localeCompare(a.fecha)).map(o=>{
+    const c=clientes.find(x=>x.id===o.clienteId);
+    const prods=(o.lineas||[]).map(l=>l.nombre).join(', ');
+    return `<tr><td>${fmtDate(o.fecha)}</td><td class="mono" style="color:var(--orange)">${o.numero}</td><td>${c?c.nombre:'—'}</td><td style="font-size:12px;color:var(--text2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${prods}</td><td class="mono amount-pos">${fmtUSD(o.total)}</td><td style="white-space:nowrap"><button class="btn btn-secondary btn-sm" onclick="editOferta('${o.id}')">✏️</button><button class="btn btn-primary btn-sm" onclick="generarOfertaPDF(ofertas.find(x=>x.id==='${o.id}'))">📄 PDF</button><button class="btn btn-danger btn-sm" onclick="deleteOferta('${o.id}')">✕</button></td></tr>`;
+  }).join('');
+}
+
+function generarOfertaPDF(o) {
+  const c=o.cliente||clientes.find(x=>x.id===o.clienteId);
+  const emp=empresaActual||{};
+  const pc=emp.colorPrimary||'#E8202A';
+  const logoH=emp.logo?`<img src="${emp.logo}" style="height:48px;object-fit:contain">`:`<div style="font-size:16px;font-weight:900;color:${pc}">${emp.nombre||'DAL MIAMI'}</div>`;
+  const lineasHTML=(o.lineas||[]).map(l=>`<tr><td style="padding:10px;border:1px solid #ddd;font-weight:600">${l.nombre}</td><td style="padding:10px;border:1px solid #ddd;text-align:center">${l.um}</td><td style="padding:10px;border:1px solid #ddd;text-align:right">${l.qty.toLocaleString('es',{minimumFractionDigits:3})}</td><td style="padding:10px;border:1px solid #ddd;text-align:right">${l.price.toLocaleString('es',{minimumFractionDigits:2})} ${o.moneda}</td><td style="padding:10px;border:1px solid #ddd;text-align:right;font-weight:700">${l.importe.toLocaleString('es',{minimumFractionDigits:2})} ${o.moneda}</td></tr>`).join('');
+  const hoy=new Date().toLocaleDateString('es',{year:'numeric',month:'long',day:'numeric'});
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>OFERTA ${o.numero}</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;color:#1a1a1a;padding:28px;font-size:12px}@media print{body{padding:10px}}</style></head><body>
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid ${pc}"><div>${logoH}<div style="font-size:9px;color:#666;margin-top:4px;line-height:1.8">${emp.direccion||''} ${emp.ein?'· '+emp.ein:''}</div></div><div style="text-align:right"><div style="font-size:40px;font-weight:900;color:${pc};letter-spacing:2px">OFERTA</div><table style="margin-top:8px;margin-left:auto;border-collapse:collapse;min-width:160px"><tr><td style="padding:4px 10px;background:#f5f5f5;font-weight:700;font-size:9px;border:1px solid #ddd">N°</td><td style="padding:4px 10px;border:1px solid #ddd;font-family:monospace;font-weight:700">${o.numero}</td></tr><tr><td style="padding:4px 10px;background:#f5f5f5;font-weight:700;font-size:9px;border:1px solid #ddd">FECHA</td><td style="padding:4px 10px;border:1px solid #ddd">${fmtDate(o.fecha)}</td></tr><tr><td style="padding:4px 10px;background:#f5f5f5;font-weight:700;font-size:9px;border:1px solid #ddd">VÁLIDA</td><td style="padding:4px 10px;border:1px solid #ddd">30 días</td></tr></table></div></div>
+${c?`<div style="background:#f9f9f9;border-left:4px solid ${pc};padding:12px 16px;margin-bottom:20px;border-radius:0 6px 6px 0"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:4px">Estimado cliente</div><div style="font-size:16px;font-weight:700">${c.nombre}</div>${c.direccion?`<div style="font-size:11px;color:#666;margin-top:2px">${c.direccion}</div>`:''}</div>`:''}
+<div style="margin-bottom:16px;font-size:12px;color:#444;line-height:1.8">Nos complace presentarle nuestra oferta comercial:</div>
+<table style="width:100%;border-collapse:collapse;margin-bottom:16px"><thead><tr style="background:#1a1a2e;color:#fff"><th style="padding:10px;text-align:left;font-size:10px">PRODUCTO</th><th style="padding:10px;text-align:center;font-size:10px;width:50px">UM</th><th style="padding:10px;text-align:right;font-size:10px;width:85px">CANTIDAD</th><th style="padding:10px;text-align:right;font-size:10px;width:100px">PRECIO U.</th><th style="padding:10px;text-align:right;font-size:10px;width:110px">IMPORTE</th></tr></thead><tbody>${lineasHTML}</tbody></table>
+<div style="display:flex;justify-content:flex-end;margin-bottom:20px"><table style="border-collapse:collapse;min-width:240px">${o.flete>0?`<tr><td style="padding:8px 14px;background:#f5f5f5;font-weight:700;font-size:11px;border:1px solid #ddd">FLETE</td><td style="padding:8px 14px;border:1px solid #ddd;text-align:right">${o.flete.toLocaleString('es',{minimumFractionDigits:2})} ${o.moneda}</td></tr>`:''}<tr style="background:${pc}15"><td style="padding:10px 14px;font-weight:900;font-size:13px;border:2px solid ${pc}">TOTAL OFERTA</td><td style="padding:10px 14px;border:2px solid ${pc};text-align:right;font-weight:900;font-size:16px;color:${pc}">${o.total.toLocaleString('es',{minimumFractionDigits:2})} ${o.moneda}</td></tr></table></div>
+${o.incoterm||o.condicion?`<div style="background:#f5f5f5;border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:11px"><strong>Condiciones:</strong> ${o.condicion||''} ${o.incoterm?'· Incoterm: '+o.incoterm:''}</div>`:''}
+${o.notas?`<div style="border-left:3px solid ${pc};padding:10px 14px;margin-bottom:16px;font-size:11px;color:#444;background:#fafafa">${o.notas}</div>`:''}
+<div style="margin-top:24px;padding:14px;background:#f0f9ff;border-radius:6px;font-size:11px;color:#555;text-align:center;line-height:1.8">Esta oferta no constituye documento fiscal. Para proceder, confirme por escrito la aceptación.<br><strong>${emp.nombre||''}</strong> ${emp.email?'· '+emp.email:''} ${emp.tel?'· '+emp.tel:''}</div>
+<div style="margin-top:20px;display:flex;justify-content:space-between;border-top:1px solid #ddd;padding-top:10px"><div style="font-size:9px;color:#aaa">${hoy} · ${o.numero}</div><div style="font-size:9px;color:#aaa">${emp.ein||''}</div></div>
+</body></html>`;
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const win=window.open(url,'_blank');
+  if(!win) toast('Permite ventanas emergentes','error');
+  else setTimeout(()=>{try{win.print();}catch(e){}},1200);
+  setTimeout(()=>URL.revokeObjectURL(url),20000);
+}
+
 // ═══ BADGES ═══
 function updateBadges() {
   document.getElementById('badge-clientes').textContent=clientes.length;
@@ -3835,7 +3969,7 @@ function updateBadges() {
   // Separar invoices financieros vs documentos complementarios
   const finTypes=['I','F'];
   document.getElementById('badge-invoices').textContent=invoices.filter(x=>finTypes.includes(x.tipoKey)).length;
-  document.getElementById('badge-documentos').textContent=invoices.filter(x=>!finTypes.includes(x.tipoKey)).length;
+  const _ofBadge = document.getElementById('badge-ofertas'); if(_ofBadge) _ofBadge.textContent = ofertas.length;
   document.getElementById('badge-calc').textContent=calculos.length;
   document.getElementById('badge-gastos').textContent=gastos.length;
 }
