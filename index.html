@@ -3278,6 +3278,14 @@ function deleteGasto(id) {
   toast('Gasto eliminado');
 }
 
+function toggleGastoExcluido(id) {
+  const g = gastos.find(x => x.id === id); if (!g) return;
+  g.excluido = !g.excluido;
+  saveGastosDB();
+  renderGastos();
+  renderDashboard();
+}
+
 function renderGastos() {
   if (!document.getElementById('gastosTable')) return;
   const tbody    = document.getElementById('gastosTable');
@@ -3289,23 +3297,26 @@ function renderGastos() {
   if (filtMes) rows = rows.filter(g => g.fecha && g.fecha.slice(5, 7) === filtMes);
   if (filtCat) rows = rows.filter(g => g.categoria === filtCat);
 
-  // Stat cards
-  const totalGastos   = rows.reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
-  const totalGastosTodos = gastos.reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
-  const byCategoria   = {};
-  rows.forEach(g => { byCategoria[g.categoria] = (byCategoria[g.categoria] || 0) + (parseFloat(g.monto) || 0); });
+  // Solo los NO excluidos cuentan para el total
+  const totalGastos      = rows.filter(g => !g.excluido).reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
+  const totalExcluidos   = rows.filter(g => g.excluido).reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
+  const totalGastosTodos = gastos.filter(g => !g.excluido).reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
+  const byCategoria = {};
+  rows.filter(g => !g.excluido).forEach(g => { byCategoria[g.categoria] = (byCategoria[g.categoria] || 0) + (parseFloat(g.monto) || 0); });
   const topCat        = Object.entries(byCategoria).sort((a,b) => b[1]-a[1])[0];
   const totalIngresos = pagos.reduce((s, p) => s + (parseFloat(p.monto) || 0), 0);
   const margen        = totalIngresos - totalGastosTodos;
+  const nExcluidos    = rows.filter(g => g.excluido).length;
 
   if (statsRow) statsRow.innerHTML = `
     <div class="stat-card">
       <div class="stat-label">Total Gastos${filtMes||filtCat?' (filtrado)':''}</div>
       <div class="stat-value" style="color:var(--pink)">${fmtUSD(totalGastos)}</div>
+      ${nExcluidos > 0 ? `<div style="font-size:10px;color:var(--text2);margin-top:4px">${nExcluidos} excluido(s): ${fmtUSD(totalExcluidos)}</div>` : ''}
     </div>
     <div class="stat-card">
-      <div class="stat-label">Registros</div>
-      <div class="stat-value orange">${rows.length}</div>
+      <div class="stat-label">Registros activos</div>
+      <div class="stat-value orange">${rows.length - nExcluidos}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Mayor Categoría</div>
@@ -3322,17 +3333,30 @@ function renderGastos() {
   }
 
   tbody.innerHTML = rows.map(g => {
-    const ico = GASTO_CAT_ICONS[g.categoria] || '📋';
-    const montoColor = 'amount-neg';
-    return `<tr>
+    const ico       = GASTO_CAT_ICONS[g.categoria] || '📋';
+    const excluido  = !!g.excluido;
+    const rowStyle  = excluido
+      ? 'opacity:0.38;background:rgba(255,255,255,0.02);cursor:pointer'
+      : 'cursor:pointer;transition:background .15s';
+    const montoStyle = excluido
+      ? 'font-family:monospace;font-size:12px;color:var(--text2);text-decoration:line-through'
+      : 'font-family:monospace;font-size:12px;color:var(--pink)';
+    const conceptoStyle = excluido
+      ? 'font-weight:500;text-decoration:line-through;color:var(--text2)'
+      : 'font-weight:500';
+    const toggleIcon = excluido ? '↩️' : '✓';
+    const toggleTip  = excluido ? 'Incluir en totales' : 'Excluir de totales (toca para marcar)';
+
+    return `<tr style="${rowStyle}" onclick="toggleGastoExcluido('${g.id}')" title="${toggleTip}">
       <td class="mono">${fmtDate(g.fecha)}</td>
-      <td><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,107,107,.1);color:var(--pink)">${ico} ${g.categoria}</span></td>
-      <td style="font-weight:500">${g.concepto}</td>
+      <td><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,107,107,.1);color:${excluido?'var(--text2)':'var(--pink)'}">${ico} ${g.categoria}</span></td>
+      <td style="${conceptoStyle}">${g.concepto}</td>
       <td style="font-size:12px;color:var(--text2)">${g.proveedor || '—'}</td>
-      <td class="mono ${montoColor}">${fmtUSD(g.monto)}</td>
+      <td style="${montoStyle}">${fmtUSD(g.monto)}</td>
       <td style="font-size:12px;color:var(--text2)">${g.metodo || '—'}</td>
       <td style="font-size:12px;color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${g.referencia ? g.referencia+' ' : ''}${g.notas || ''}</td>
-      <td style="white-space:nowrap">
+      <td style="white-space:nowrap" onclick="event.stopPropagation()">
+        <span style="font-size:14px;margin-right:6px;opacity:.6" title="${toggleTip}">${toggleIcon}</span>
         <button class="btn btn-secondary btn-sm" onclick="editGasto('${g.id}')">✏️</button>
         <button class="btn btn-danger btn-sm" onclick="deleteGasto('${g.id}')">✕</button>
       </td>
