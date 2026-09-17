@@ -414,6 +414,33 @@ if ('serviceWorker' in navigator) {
 </style>
 </head>
 <body>
+<!-- EMERGENCIA: Reset datos -->
+<div id="emergency-reset" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#E8202A;padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
+  <div style="color:white;font-size:13px;font-weight:700">⚠️ Sin datos — toca para restaurar</div>
+  <button onclick="emergencyRestore()" style="background:white;color:#E8202A;border:none;border-radius:8px;padding:8px 16px;font-weight:900;font-size:13px;cursor:pointer">RESTAURAR AHORA</button>
+</div>
+<script>
+function emergencyRestore() {
+  // Limpiar TODOS los flags
+  for(let i=1; i<=20; i++) {
+    localStorage.removeItem('sifa_auto_restored_v'+i);
+    localStorage.removeItem('sifa_seed_dalmiami_v'+i);
+  }
+  localStorage.removeItem('sifa_auto_restored_v2');
+  localStorage.removeItem('sifa_seeded_v1');
+  // Recargar página
+  location.reload();
+}
+// Ocultar banner si hay datos
+window.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    const tieneClientes = JSON.parse(localStorage.getItem('dalmiami_clientes')||'[]').length > 0;
+    const banner = document.getElementById('emergency-reset');
+    if(tieneClientes && banner) banner.style.display = 'none';
+  }, 2000);
+});
+</script>
+
 
 
 
